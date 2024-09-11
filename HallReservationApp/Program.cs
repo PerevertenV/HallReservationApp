@@ -13,13 +13,25 @@ namespace HallReservationApp
 			builder.Services.AddDbContext<AppDbContext>(options =>
 				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 			builder.Services.AddControllers();
 
-			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+			builder.Services.AddEndpointsApiExplorer();
+
+			builder.Services.AddSwaggerGen();
 
 			var app = builder.Build();
 
-			app.MapGet("/", () => "Hello World!");
+			if (app.Environment.IsDevelopment())
+			{
+				app.UseSwagger();
+				app.UseSwaggerUI(c =>
+				{
+					c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
+					c.RoutePrefix = string.Empty;
+				});
+			}
 
 			app.MapControllers();
 

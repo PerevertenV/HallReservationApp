@@ -24,28 +24,25 @@ namespace Data.Repository
 		{
 			//інціалізуємо список із додатковими опціями
 			List<string> options = new List<string>();
+
 			//інціалізуємо змінну із кінцевою ціною куди будемо додавати інші суми
 			//та одразу рахуємо базову ціну із к-стю годин
 			int FinalPrice = (int)(((duration.Hour*60 + duration.Minute)/60) * BPPH); 
 			//перевіряємо чи в нас є якісь додаткові функції
 			if (!additionalOptions.IsNullOrEmpty()) 
 			{
-				//якщо є додаткові функції ми їх отримуємо
-				 options = additionalOptions.Split('/').ToList();
-			}
-			//перевіряємо чи в нас є якісь додаткові функції
-			if (options.Any()) 
-			{
-				//порінюємо значення, отримуємо суму та додаємо опції 
-				foreach (string option in options) 
+				//перевіряємо із  усіма можливими функціями чи вони вибрані
+				foreach(var option in SD.AddOptions) 
 				{
-					if (SD.AddOptions.ContainsKey(option)) 
+					//перевіряємо кожну опцію
+					if (additionalOptions.Contains(option.Key)) 
 					{
-						SD.AddOptions.TryGetValue(option, out int price);
-						FinalPrice += price;
-					}	
+						//у разі збігу додаємо суму
+						FinalPrice += option.Value;
+					}
 				}
 			}
+
 			//часові перетворення та визначення часу кінця броні 
 			TimeOnly reservStartInHours = TimeOnly.FromDateTime(reservTime);
 			TimeOnly reservEndInHours = TimeOnly.FromTimeSpan(reservStartInHours.ToTimeSpan() 
