@@ -25,5 +25,8 @@ namespace Models
 		public TimeOnly reservTime { get; set; }
 		//Вибрані додаткові опції
 		public string? SelectedAddOpt { get; set; }
+		//кінцева сума для резервації
+		[Required]
+		public int FinalSum { get; set; }
     }
 }

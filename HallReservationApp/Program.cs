@@ -1,6 +1,7 @@
 using Data.Data;
 using Data.Repository;
 using Data.Repository.IRepository;
+using Data.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace HallReservationApp
@@ -14,6 +15,7 @@ namespace HallReservationApp
 				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+			builder.Services.AddScoped<IBLServices, BLServices>();
 
 			builder.Services.AddControllers();
 

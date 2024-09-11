@@ -10,6 +10,6 @@ namespace Data.Repository.IRepository
 {
 	public interface IReservationRepository: IRepository<Reservation>
 	{
-		public int CountFullPrice (int BPPH, string? additionalOptions, DateTime reservTime, TimeOnly duration);
+		
 	}
 }
