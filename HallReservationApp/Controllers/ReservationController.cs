@@ -10,16 +10,17 @@ namespace HallReservationApp.Controllers
 	public class ReservationController : Controller
 	{
 		private readonly IUnitOfWork _unitOfWork;
-		private IBLServices _BLServices;
+		private readonly IBLServices _BLServices;
 
 		public ReservationController(IUnitOfWork unitOfWork, IBLServices BLServices)
 		{
 			_unitOfWork = unitOfWork;
 			_BLServices = BLServices;
 		}
+
 		[HttpPost]
 		public async Task<ActionResult> CreateReservation(int hallId, DateTime reservDateTime, 
-			TimeOnly duration, string AddOptions)
+			TimeOnly duration, string? AddOptions)
 		{
 			//отримуємо резервації для перевірки чи вже не існує така резервація
 			List<Reservation> reservListFromDB = (await _unitOfWork.Reservation
@@ -32,7 +33,8 @@ namespace HallReservationApp.Controllers
 				return BadRequest("A reservation for the same hall and date already exists"); 
 			}
 			//отримуємо зал за ID
-			Hall reservatedHall = await _unitOfWork.Hall.GetFirstOrDefaultAsync(u => u.Id == hallId);
+			Hall? reservatedHall = await _unitOfWork.Hall.GetFirstOrDefaultAsync(u => 
+				u.Id == hallId);
 			//Перевіряєм очи існує зал за переданим ID
 			if (reservatedHall == null) 
 			{
@@ -55,6 +57,33 @@ namespace HallReservationApp.Controllers
 			await _unitOfWork.Hall.UpdateAsync(reservatedHall);
 			//повертаємо повідомлення про успіх та повертаємо фінальну суму
 			return Ok($"Reservation created successfully, with a final sum: {newReserv.FinalSum}");
+		}
+
+		[HttpGet]
+		public async Task<ActionResult> GenerateReport() 
+		{
+			List<Reservation> listForMakingReport = (await _unitOfWork.Reservation
+				.GetAllAsync()).ToList();
+			string resultString = "";
+
+			if (listForMakingReport.Any())
+			{
+				//отримуємо найпопулярніший зал щоб передати його назву
+				Hall? theMostPopularHall = await _unitOfWork.Hall
+					.GetFirstOrDefaultAsync(u =>
+					u.Id == _BLServices.Reservation.TheMostPopularHall(listForMakingReport));
+
+				//створюємо звіт викликаючи методи
+				resultString += $"The most popular hall is: {theMostPopularHall.Name}\n" +
+					"The most popular reservation duration is: " +
+					$"{_BLServices.Reservation.TheMostPopularDuration(listForMakingReport)}\n" +
+					"Average final sum is: " +
+					$"{Math.Round(_BLServices.Reservation
+					.AvrgPriceForReservations(listForMakingReport), 2)}\n" +
+					"The most popular additional option is: " +
+					$"{_BLServices.Reservation.TheMostPopularAddOption(listForMakingReport)}";
+			}
+			return Ok(resultString);
 		}
 	}
 }

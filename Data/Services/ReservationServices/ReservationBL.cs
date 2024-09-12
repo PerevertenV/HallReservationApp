@@ -1,5 +1,6 @@
 ﻿using Data.Services.ReservationServices.Interfces;
 using Microsoft.IdentityModel.Tokens;
+using Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,6 +56,68 @@ namespace Data.Services.ReservationServices
 			}
 
 			return FinalPrice;
+		}
+
+		public double AvrgPriceForReservations(List<Reservation> reservList)
+		{
+			//одразу прередаємо значення яке отримуємо через LINQ
+			return reservList.Average(u => u.FinalSum);
+		}
+
+		public string TheMostPopularAddOption(List<Reservation> reservList)
+		{
+			//створюємо словник в якому буде ключ це опція 
+			//а значенням скільки раз додана ця опція у резерваціях
+			Dictionary<string, int> AddOptionDctnr = new Dictionary<string, int>();
+			//предаємо всі доступні опції
+			foreach(var key in SD.AddOptions.Keys) 
+			{
+				AddOptionDctnr[key] = 0;
+			}
+			//преребираємо та рахуємо яка опція є найпопулярнішою
+			foreach(Reservation reservation in reservList) 
+			{ 
+				// перевіряємо чи містить резервація додаткові опції
+				foreach (var key in AddOptionDctnr.Keys.ToList())
+				{
+					if (reservation.SelectedAddOpt.Contains(key))
+					{
+						//збільшуємо значення для відповідної опції
+						AddOptionDctnr[key]++;
+					}
+				}
+			}
+			//шукаємо ключ із найбільшим значенням та передаємо його
+			return AddOptionDctnr.Aggregate((x, y) => x.Value > y.Value ? x : y).Key;
+		}
+
+		public TimeOnly TheMostPopularDuration(List<Reservation> reservList)
+		{
+			//за допомоги LINQ групуємо по значеню 
+			//потім сортуємо ці групи по к-сті елементів
+			//Вибираємо значення із груп по одному(вибираємо ключ)
+			//Обираємо перший яки має найбільше значення
+			TimeOnly resultTime = reservList
+				.GroupBy(n => n.reservTime)
+				.OrderByDescending(g => g.Count())
+				.Select(g => g.Key)
+				.FirstOrDefault();
+
+			return resultTime;
+		}
+		public int TheMostPopularHall(List<Reservation> reservList)
+		{
+			//за допомоги LINQ групуємо по значеню 
+			//потім сортуємо ці групи по к-сті елементів
+			//Вибираємо значення із груп по одному(вибираємо ключ)
+			//Обираємо перший яки має найбільше значення
+			int  resultId = reservList
+				.GroupBy(n => n.hallId)
+				.OrderByDescending(g => g.Count())
+				.Select(g => g.Key)
+				.FirstOrDefault();
+			//прередаємо значення
+			return (resultId);
 		}
 	}
 }

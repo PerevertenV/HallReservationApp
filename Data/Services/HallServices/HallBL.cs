@@ -39,7 +39,7 @@ namespace Data.Services.HallServices
 					//відфільтрації резервацій котрі не потрапляють у заданий чаосвий проміжок
 					reservationList = reservationList.Where(u =>
 						(u.dateTimeOfReserv.Add(u.reservTime.ToTimeSpan()) < ReservationDateTime)
-						|| (u.dateTimeOfReserv < ReservationDateTime.Add(duration.ToTimeSpan())))
+						|| (u.dateTimeOfReserv > ReservationDateTime.Add(duration.ToTimeSpan())))
 						.ToList();
 
 					Hall singleHall = new Hall();

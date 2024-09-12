@@ -62,11 +62,23 @@ namespace HallReservationApp.Controllers
 		public async Task<ActionResult> DeleteHall(int id)
 		{
 			//оотримуємо зал із БД
-			Hall? hallToBeDeleted = await _unitOfWork.Hall.GetFirstOrDefaultAsync(x => x.Id == id);
+			Hall? hallToBeDeleted = await _unitOfWork.Hall.GetFirstOrDefaultAsync(x => 
+				x.Id == id);
 			//преервіряємо чи даний зал існує
 			if (hallToBeDeleted == null) 
 			{
 				return NotFound($"hall with id: {id} not found");
+			}
+			//якщо  існують якісь бронювання на зал який має видалятися їх теж потрібно видалити
+			List<Reservation> reservationToBeDeleyed = (await _unitOfWork.Reservation
+				.GetAllAsync(u => u.hallId == id)).ToList();
+			//перевіряємо чи існують резервації, та якщо так видаляємо їх
+			if (reservationToBeDeleyed.Any())
+			{
+				foreach (Reservation reservation in reservationToBeDeleyed)
+				{
+					await _unitOfWork.Reservation.DeleteAsync(reservation);
+				}
 			}
 			//якщо зал існує видаляємо його
 			 await _unitOfWork.Hall.DeleteAsync(hallToBeDeleted);
